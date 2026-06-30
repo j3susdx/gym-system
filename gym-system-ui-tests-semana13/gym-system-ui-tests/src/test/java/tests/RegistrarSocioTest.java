@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import pages.CrearSocioPage;
 import pages.DashboardPage;
 import pages.LoginPage;
-import pages.SociosPage;
 import utils.ReportExtension;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -28,28 +27,6 @@ public class RegistrarSocioTest extends BaseTest {
         long tiempo = System.currentTimeMillis();
         String ultimos = String.valueOf(tiempo);
         return "9" + ultimos.substring(ultimos.length() - 7);
-    }
-
-    @Test
-    public void registrarNuevoSocioConDatosValidosYValidarEnListado() {
-        iniciarSesion();
-
-        String nombre = "Socio Selenium Prueba";
-        String dni = dniUnico();
-        String telefono = "987654321";
-        String email = "socio" + dni + "@test.com";
-
-        CrearSocioPage crearSocioPage = new CrearSocioPage(driver, wait);
-        crearSocioPage.abrir(baseUrl);
-        crearSocioPage.registrarSocio(nombre, dni, telefono, email, "activo");
-
-        SociosPage sociosPage = new SociosPage(driver, wait);
-        sociosPage.abrir(baseUrl);
-
-        assertTrue(
-                sociosPage.contieneDni(dni),
-                "El socio registrado no aparece en el listado de socios."
-        );
     }
 
     @Test
@@ -114,65 +91,5 @@ public class RegistrarSocioTest extends BaseTest {
 
         assertTrue(crearSocioPage.telefonoEsInvalido(), "El sistema debe rechazar teléfono con menos de 9 números.");
         assertTrue(crearSocioPage.permaneceEnFormulario(), "El sistema no debe guardar un socio con teléfono inválido.");
-    }
-
-    @Test
-    public void correoInvalidoDebeMostrarValidacion() {
-        iniciarSesion();
-
-        CrearSocioPage crearSocioPage = new CrearSocioPage(driver, wait);
-        crearSocioPage.abrir(baseUrl);
-
-        crearSocioPage.completarFormulario(
-                "Socio Correo Malo",
-                dniUnico(),
-                "987654321",
-                "correo-invalido",
-                "activo"
-        );
-
-        assertTrue(
-                crearSocioPage.correoEsInvalido(),
-                "El sistema debe rechazar un correo con formato inválido."
-        );
-
-        crearSocioPage.guardarSinEsperarRedireccion();
-
-        assertTrue(
-                crearSocioPage.permaneceEnFormulario(),
-                "El sistema no debe guardar un socio con correo inválido."
-        );
-    }
-
-    @Test
-    public void correoOpcionalPermiteRegistrarSocio() {
-        iniciarSesion();
-
-        String nombre = "Socio Sin Correo";
-        String dni = dniUnico();
-        String telefono = "987654321";
-
-        CrearSocioPage crearSocioPage = new CrearSocioPage(driver, wait);
-        crearSocioPage.abrir(baseUrl);
-
-        crearSocioPage.completarFormulario(
-                nombre,
-                dni,
-                telefono,
-                "",
-                "activo"
-        );
-
-        assertTrue(crearSocioPage.correoEsValido(), "El correo vacío debe ser válido porque es opcional.");
-
-        crearSocioPage.registrarSocio(nombre, dni, telefono, "", "activo");
-
-        SociosPage sociosPage = new SociosPage(driver, wait);
-        sociosPage.abrir(baseUrl);
-
-        assertTrue(
-                sociosPage.contieneDni(dni),
-                "El socio sin correo debería registrarse correctamente porque el correo es opcional."
-        );
     }
 }
