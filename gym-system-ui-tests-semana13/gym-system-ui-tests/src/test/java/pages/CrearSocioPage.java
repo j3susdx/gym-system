@@ -52,10 +52,9 @@ public class CrearSocioPage extends BasePage {
 
         wait.until(ExpectedConditions.or(
                 ExpectedConditions.urlContains("/socios/index"),
-                ExpectedConditions.urlContains("/socios"),
-                ExpectedConditions.visibilityOfElementLocated(By.cssSelector("table")),
-                ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".table"))
-        ));
+                ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#tabla-socios")),
+                ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".table-data")),
+                ExpectedConditions.visibilityOfElementLocated(By.tagName("table"))));
     }
 
     public boolean permaneceEnFormulario() {
