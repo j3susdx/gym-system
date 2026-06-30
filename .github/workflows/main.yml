@@ -51,6 +51,11 @@ jobs:
           mvn -version
           google-chrome --version
 
+      - name: Adaptar conexion de base de datos para GitHub Actions
+        run: |
+          sed -i "s/private \$host = 'localhost';/private \$host = '127.0.0.1';/" app/config/Database.php
+          grep "private \$host" app/config/Database.php
+
       - name: Importar base de datos del gimnasio
         run: |
           mysql -h 127.0.0.1 -uroot < bk_basededatos.sql
@@ -78,8 +83,21 @@ jobs:
       - name: Levantar sistema Gym System
         run: |
           cd public
-          php -S 127.0.0.1:8000 router.php > ../server.log 2>&1 &
-          sleep 5
+          nohup php -S 127.0.0.1:8000 router.php > ../server.log 2>&1 &
+          sleep 8
+
+      - name: Verificar que el login cargue correctamente
+        run: |
+          curl -s -L http://127.0.0.1:8000/auth/index -o login.html
+          echo "Contenido inicial de login.html:"
+          head -80 login.html
+
+          if ! grep -q 'name="email"' login.html; then
+            echo "ERROR: No se encontro el campo email en el login."
+            echo "Mostrando server.log:"
+            cat server.log
+            exit 1
+          fi
 
       - name: Verificar sintaxis PHP
         run: |
@@ -88,7 +106,7 @@ jobs:
       - name: Ejecutar pruebas Selenium con Maven
         working-directory: gym-system-ui-tests-semana13/gym-system-ui-tests
         run: |
-          mvn clean test -Dheadless=true -DbaseUrl=http://127.0.0.1:8000
+          mvn clean test -Dheadless=true -DwaitSeconds=20 -DbaseUrl=http://127.0.0.1:8000 -DuserEmail=recepcion@gym.com -DuserPassword=123456
 
       - name: Generar reporte Maven
         if: always()
@@ -104,5 +122,7 @@ jobs:
           path: |
             gym-system-ui-tests-semana13/gym-system-ui-tests/target/surefire-reports/
             gym-system-ui-tests-semana13/gym-system-ui-tests/target/site/
-            gym-system-ui-tests-semana13/gym-system-ui-tests/target/screenshots/
+            gym-system-ui-tests-semana13/gym-system-ui-tests/target/reporte-ui/
+            gym-system-ui-tests-semana13/gym-system-ui-tests/target/evidencias/
             server.log
+            login.html
