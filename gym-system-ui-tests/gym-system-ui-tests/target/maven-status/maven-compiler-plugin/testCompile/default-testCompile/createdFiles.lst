@@ -1,9 +1,0 @@
-base\BaseTest.class
-pages\BasePage.class
-tests\RegistrarSocioTest.class
-utils\ReportExtension.class
-pages\LoginPage.class
-pages\DashboardPage.class
-pages\CrearSocioPage.class
-tests\LoginTest.class
-pages\SociosPage.class

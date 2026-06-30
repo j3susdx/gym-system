@@ -44,11 +44,12 @@ jobs:
       - name: Instalar Google Chrome
         uses: browser-actions/setup-chrome@v1
 
-      - name: Verificar versiones
+      - name: Verificar versiones instaladas
         run: |
           php -v
           java -version
           mvn -version
+          google-chrome --version
 
       - name: Importar base de datos del gimnasio
         run: |
@@ -82,16 +83,16 @@ jobs:
 
       - name: Verificar sintaxis PHP
         run: |
-          find app public -name "*.php" -not -path "app/lib/*" -print0 | xargs -0 -n1 php -l
+          find app public -name "*.php" -print0 | xargs -0 -n1 php -l
 
       - name: Ejecutar pruebas Selenium con Maven
-        working-directory: gym-system-ui-tests
+        working-directory: gym-system-ui-tests-semana13/gym-system-ui-tests
         run: |
           mvn clean test -Dheadless=true -DbaseUrl=http://127.0.0.1:8000
 
       - name: Generar reporte Maven
         if: always()
-        working-directory: gym-system-ui-tests
+        working-directory: gym-system-ui-tests-semana13/gym-system-ui-tests
         run: |
           mvn surefire-report:report
 
@@ -101,7 +102,7 @@ jobs:
         with:
           name: reporte-semana-13-gym-system
           path: |
-            gym-system-ui-tests/target/surefire-reports/
-            gym-system-ui-tests/target/site/
-            gym-system-ui-tests/target/screenshots/
+            gym-system-ui-tests-semana13/gym-system-ui-tests/target/surefire-reports/
+            gym-system-ui-tests-semana13/gym-system-ui-tests/target/site/
+            gym-system-ui-tests-semana13/gym-system-ui-tests/target/screenshots/
             server.log
