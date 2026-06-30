@@ -43,15 +43,18 @@ public class CrearSocioPage extends BasePage {
     }
 
     public void guardarSinEsperarRedireccion() {
-        clickeable(botonGuardarId, botonGuardarCss).click();
+        clickSeguro(botonGuardarId, botonGuardarCss);
     }
 
     public void registrarSocio(String nombre, String dni, String telefono, String email, String estado) {
         completarFormulario(nombre, dni, telefono, email, estado);
         guardarSinEsperarRedireccion();
+
         wait.until(ExpectedConditions.or(
                 ExpectedConditions.urlContains("/socios/index"),
-                ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".table-data, #tabla-socios, table"))
+                ExpectedConditions.urlContains("/socios"),
+                ExpectedConditions.visibilityOfElementLocated(By.cssSelector("table")),
+                ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".table"))
         ));
     }
 

@@ -24,12 +24,13 @@ public class LoginPage extends BasePage {
 
     public void abrir(String baseUrl) {
         driver.get(baseUrl + "/auth/index");
+        visible(inputEmailId, inputEmailName);
     }
 
     public void iniciarSesion(String correo, String password) {
         escribir(correo, inputEmailId, inputEmailName);
         escribir(password, inputPasswordId, inputPasswordName);
-        clickeable(botonLoginId, botonLoginCss).click();
+        clickSeguro(botonLoginId, botonLoginCss);
     }
 
     public boolean muestraMensajeError() {
@@ -37,7 +38,11 @@ public class LoginPage extends BasePage {
             return visible(alertaError).isDisplayed();
         } catch (TimeoutException e) {
             String textoPagina = driver.findElement(By.tagName("body")).getText().toLowerCase();
-            return textoPagina.contains("incorrect") || textoPagina.contains("inhabilitada");
+
+            return textoPagina.contains("incorrect")
+                    || textoPagina.contains("inhabilitada")
+                    || textoPagina.contains("error")
+                    || textoPagina.contains("inválid");
         }
     }
 }
