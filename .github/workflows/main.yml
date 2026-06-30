@@ -112,7 +112,7 @@ jobs:
         if: always()
         working-directory: gym-system-ui-tests-semana13/gym-system-ui-tests
         run: |
-          mvn surefire-report:report
+          mvn surefire-report:report-only
 
       - name: Subir reporte como evidencia
         if: always()
