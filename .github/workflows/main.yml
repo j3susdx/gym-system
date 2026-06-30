@@ -1,0 +1,107 @@
+name: Semana 13 - CI/CD Gym System
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  pruebas-automatizadas:
+    name: Ejecutar pruebas automatizadas con Selenium
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+          MYSQL_DATABASE: gym_system
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Descargar codigo del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_mysql
+
+      - name: Configurar JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Instalar Google Chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Verificar versiones
+        run: |
+          php -v
+          java -version
+          mvn -version
+
+      - name: Importar base de datos del gimnasio
+        run: |
+          mysql -h 127.0.0.1 -uroot < bk_basededatos.sql
+
+      - name: Crear router para ejecutar el sistema PHP
+        run: |
+          cat > public/router.php <<'PHP'
+          <?php
+          $path = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
+          $file = __DIR__ . $path;
+
+          if ($path !== "/" && is_file($file)) {
+              return false;
+          }
+
+          $url = trim($path, "/");
+
+          if ($url !== "") {
+              $_GET["url"] = $url;
+          }
+
+          require __DIR__ . "/index.php";
+          PHP
+
+      - name: Levantar sistema Gym System
+        run: |
+          cd public
+          php -S 127.0.0.1:8000 router.php > ../server.log 2>&1 &
+          sleep 5
+
+      - name: Verificar sintaxis PHP
+        run: |
+          find app public -name "*.php" -not -path "app/lib/*" -print0 | xargs -0 -n1 php -l
+
+      - name: Ejecutar pruebas Selenium con Maven
+        working-directory: gym-system-ui-tests
+        run: |
+          mvn clean test -Dheadless=true -DbaseUrl=http://127.0.0.1:8000
+
+      - name: Generar reporte Maven
+        if: always()
+        working-directory: gym-system-ui-tests
+        run: |
+          mvn surefire-report:report
+
+      - name: Subir reporte como evidencia
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reporte-semana-13-gym-system
+          path: |
+            gym-system-ui-tests/target/surefire-reports/
+            gym-system-ui-tests/target/site/
+            gym-system-ui-tests/target/screenshots/
+            server.log
